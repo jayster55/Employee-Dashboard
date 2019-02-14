@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>GuildOne Employee Dashboard</title>
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body>
+
+<div id="modal1" class="modal">
+  <div class="modal-content">
+    <h4 class="blue-text">Daily Announcements</h4>
+    <hr>
+      <ol class="flow-text">
+        <li>
+          The weekly webinar is today so make sure to come to the board meeting at 9am sharp to learn how EBX uses Kafka!
+          Hope to see you all there!
+        </li>
+        <li>
+          Make sure to enter your progress into the Fitness spreadsheet for Fit Feb!
+        </li>
+      </ul>
+
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+  </div>
+</div>
+
+  <div id="index-banner" class="parallax-container">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <h1 class="center"><br>Welcome Guilders!</h1>
+        <div class="row center">
+          <h5 class="header light">Do something awesome today</h5>
+        </div>
+        <div class="row center">
+          <a class="btn-large black waves-effect waves-light modal-trigger" href="#modal1"> Click Here for Daily Announcements </a>
+        </div>
+        <div class="row center">
+      </div>
+    </div>
+    <div class="parallax"><img src="background2.jpg" alt="Unsplashed background img 1"></div>
+  </div>
+</div>
+  <div class="container">
+    <div class="section">
+      <div class="row center">
+        <h3 class="header col s12 light">This Week at GuildOne</h3>
+        <h5 class="header col s12 light">Fit Feb is on! Make sure to track your progress in the sheet below!</h5>
+      </div>
+      <div class="row center">
+        <a href="https://docs.google.com/spreadsheets/d/1IRsq0dAvuckNkTF1kdBGU3sdVdCiLJPbPnVgKyTxvPA/edit?usp=sharing" target="_blank" class="btn-large waves-effect waves-light black">Go to Spreadsheet</a>
+      </div>
+      <div class="row center">
+        <h5 class="header col s12 light">Quick Links</h5>
+        <ul class="collapsible col s6 offset-s3 left-align">
+          <li>
+            <div class="collapsible-header"><i class="material-icons">assignment</i>General</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">Administrative</h5>
+                <a href="https://guild1.bamboohr.com/login.php?r=%2Fhome%2F" target="_blank" class="left-align collection-item waves-effect waves-light pink-text">Bamboo</a>
+                <a href="https://guild1.co" target="_blank" class="left-align collection-item waves-effect waves-light blue-text">Guild One Website</a>
+                <a href="https://guild1.atlassian.net/plugins/servlet/ac/is.origo.jira.tempo-plugin/tempo-my-work#!/timesheet" target="_blank" class="left-align collection-item waves-effect waves-light green-text">My Timesheet</a>
+
+                <h5 class="header col s12 light">The Guild Hall</h5>
+                <a href="http://g1docs.guild1.com/ebx/" target="_blank" class="left-align collection-item waves-effect waves-light deep-purple-text">January 2019 Edition</a>
+                <a href="http://g1docs.guild1.com/ebx/" target="_blank" class="left-align collection-item waves-effect waves-light deep-purple-text">December 2018 Edition</a>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="collapsible-header"><i class="material-icons">attachment</i>Resources</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">Internal</h5>
+                <a href="https://drive.google.com/drive/folders/1r5qYwBZIZ-62MkqnDd-LjyRFDjHKrsLy?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light green-text">Google Drive</a>
+                <a href="https://drive.google.com/drive/folders/1GFPVTH5LS8d-ggt7Of0dAkJ5UIzgv7sq?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light blue-text">Mockups & Logos</a>
+                <a href="https://drive.google.com/drive/folders/1pyyinXHgdq0caRaQXJNbsFIJ-y35HXxx?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light purple-text">Testing</a>
+                <h5 class="header col s12 light">External</h5>
+                <a href="https://docs.corda.net" target="_blank" class="left-align collection-item waves-effect waves-light red-text">Corda Documentation</a>
+                <a href="https://docs.aws.amazon.com/index.html#lang/en_us" target="_blank" class="left-align collection-item waves-effect waves-light orange-text">AWS Documentation</a>
+
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="collapsible-header"><i class="material-icons">code</i>BitBucket</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">EBX</h5>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/EBX" target="_blank" class="collection-item left-align waves-effect waves-light red-text">EBX</a>
+                <h5 class="header col s12 light">Studios</h5>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/EL" target="_blank" class="collection-item left-align waves-effect waves-light pink-text">Elements Studio</a>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/RS" target="_blank" class="collection-item left-align waves-effect waves-light purple-text">Royalty Studio</a>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/FS" target="_blank" class="collection-item left-align waves-effect waves-light deep-purple-text">Facility Studio</a>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/SYN" target="_blank" class="collection-item left-align waves-effect waves-light indigo-text">Synergy Studio</a>
+                <h5 class="header col s12 light">General</h5>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/MINE" target="_blank" class="collection-item left-align waves-effect waves-light blue-text">SynMine</a>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/PUB" target="_blank" class="collection-item left-align waves-effect waves-light light-blue-text">Open Source</a>
+                <a href="https://bitbucket.org/account/user/guildoneinc/projects/RES" target="_blank" class="collection-item left-align waves-effect waves-light cyan-text"">Research</a>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="collapsible-header"><i class="material-icons">group</i>Slack Channels</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">Primary Channels</h5>
+                <a href="https://guild1.slack.com/messages/C42UR9PPH" target="_blank" class="left-align collection-item waves-effect waves-light orange-text"">General</a>
+                <a href="https://guild1.slack.com/messages/CFD93QHDZ" target="_blank" class="left-align collection-item waves-effect waves-light green-text"">Health</a>
+                <a href="https://guild1.slack.com/messages/CFT6ANMED" target="_blank" class="left-align collection-item waves-effect waves-light light-blue-text"">Weekly Webinars</a>
+                <h5 class="header col s12 light">EBX Channels</h5>
+                <a href="https://guild1.slack.com/messages/CFSBPS46R" target="_blank" class="left-align collection-item waves-effect waves-light red-text">EBX Cordapp</a>
+                <a href="https://guild1.slack.com/messages/CFRHD0S0H" target="_blank" class="left-align collection-item waves-effect waves-light pink-text">EBX Services</a>
+                <a href="https://guild1.slack.com/messages/CFS2K4PHR" target="_blank" class="left-align collection-item waves-effect waves-light purple-text">EBX GUI</a>
+                <a href="https://guild1.slack.com/messages/CFS2HN4JX" target="_blank" class="left-align collection-item waves-effect waves-light deep-purple-text">EBX CLI</a>
+                <a href="https://guild1.slack.com/messages/CFTJ2JGH4" target="_blank" class="left-align collection-item waves-effect waves-light indigo-text">EBX Test</a>
+                <a href="https://guild1.slack.com/messages/CFLGWQC3G" target="_blank" class="left-align collection-item waves-effect waves-light blue-text">EBX Documentation</a>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="collapsible-header"><i class="material-icons">settings</i>Jira Dashboards</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">EBX</h5>
+                <a href="https://guild1.atlassian.net/browse/RL" target="_blank" class="left-align collection-item waves-effect waves-light red-text">EBX: Development + QA</a>
+                <h5 class="header col s12 light">Studios</h5>
+                <a href="https://guild1.atlassian.net/browse/RSDEV" target="_blank" class="left-align collection-item waves-effect waves-light deep-purple-text">Royalty Studio: Development</a>
+
+                <a href="https://guild1.atlassian.net/browse/RSQ" target="_blank" class="left-align collection-item waves-effect waves-light blue-text">Royalty Studio: QA</a>
+                <a href="https://guild1.atlassian.net/browse/SYN" target="_blank" class="left-align collection-item waves-effect waves-light green-text">Synergy Studio: Development</a>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="collapsible-header"><i class="material-icons">note</i>Documentation</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">EBX</h5>
+                <a href="http://g1docs.guild1.com/ebx/" target="_blank" class="left-align collection-item waves-effect waves-light red-text">EBX Documentation</a>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="collapsible-header"><i class="material-icons">flight_land</i>On-Boarding</div>
+            <div class="collapsible-body">
+              <div class="collection">
+                <h5 class="header col s12 light">Developers and QA</h5>
+                <a href="http://g1docs.guild1.com/ebx/" target="_blank" class="left-align collection-item waves-effect waves-light green-text">Getting Started</a>
+                <a href="https://docs.google.com/document/d/1uzpHDMFeMlnnxTaxODeHUJTTEmP_pnPw2pChNYxb9YU/edit?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light cyan-text">Setting Up Royalty Studio</a>
+                <a href="https://docs.google.com/document/d/1EoH0aXGHraOslD-iwU810ZLDF45D3hNoCFBtEOaYwrw/edit?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light blue-text">Setting Up EBX</a>
+                <a href="https://docs.google.com/document/d/11hoJl9LiXn9CcICquyrMslf5qSRmGan3GhrtoTiO904/edit?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light deep-purple-text">Understanding Royalty Studio</a>
+                <a href="Week 1 - EBX Architecture.key" target="_blank" class="left-align collection-item waves-effect waves-light pink-text">Understanding EBX</a>
+                <a href="https://guild1.atlassian.net/browse/IDEV-16" target="_blank" class="left-align collection-item waves-effect waves-light red-text">Your First Jira Ticket</a>
+                <a href="https://sites.google.com/a/guild1.com/g1-tech-wiki/home" target="_blank" class="left-align collection-item waves-effect waves-light orange-text">Understanding the Tech Stack</a>
+
+                <h5 class="header col s12 light">Business Development</h5>
+                <a href="http://g1docs.guild1.com/ebx/" target="_blank" class="left-align collection-item waves-effect waves-light green-text">Getting Started</a>
+                <a href="https://docs.google.com/document/d/11hoJl9LiXn9CcICquyrMslf5qSRmGan3GhrtoTiO904/edit?usp=sharing" target="_blank" class="left-align collection-item waves-effect waves-light deep-purple-text">Understanding Royalty Studio</a>
+                <a href="Week 1 - EBX Architecture.key" target="_blank" class="left-align collection-item waves-effect waves-light pink-text">Understanding EBX</a>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+
+        <div class="col s12 m8 offset-m2 l6 offset-l3" style="margin-top: 50px;">
+          <div class="card-panel grey lighten-5 z-depth-1">
+            <div class="row valign-wrapper">
+              <div class="col s12">
+              <span class="black-text">
+                <h5> <script type="text/javascript" src="https://www.brainyquote.com/link/quotebr.js"></script></h5>
+              </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="parallax-container valign-wrapper">
+      <div class="container center">
+        <h3>Employees of the Month</h3>
+        <h5 class="header light">February: Gengshen Du</h5>
+        <h5 class="header light">January: Nathan Sparks</h5>
+      </div>
+    <div class="parallax"><img src="background2.jpg" size="50%" alt="Unsplashed background img 2"></div>
+  </div>
+
+  <div class="container">
+    <div class="section">
+      <div class="row ">
+        <div class="col s6 offset-s3 center">
+          <h3><i class="mdi-content-send brown-text"></i></h3>
+          <h4>Weekly Webinar Content</h4>
+          <p class="light">All Content, Materials, Slidedecks, PDFs</p>
+          <div class="collection" style="color: light-blue;">
+            <a href="Week 2 - SynApps Plugins.html" class="left-align collection-item black-text" target="_blank">[Week 2 - Feb. 13, 2019] SynApps <b class="red-text">NEW</b></a>
+            <a href="Week 1 - EBX Architecture.key" class="left-align collection-item black-text" target="_blank">[Week 1 - Feb. 06, 2019] EBX Architecture</a>
+            <a href="Week 1 - Functional Programming in Scala.html" class="left-align collection-item black-text" target="_blank">[Week 1 - Feb. 06, 2019] Functional Programming in Scala</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="parallax-container valign-wrapper">
+    <div class="section no-pad-bot">
+    </div>
+    <div class="parallax"><img src="background3.jpg" alt="Unsplashed background img 3"></div>
+  </div>
+
+<div class="row center">
+  <h3 class="header col s12 light">GuildOne in the News</h3>
+  <h5 class="header col s12 light" style="margin-bottom: 50px">Without you we couldn't have done any of this!</h5>
+  <div class="carousel carousel-slider col s8 offset-s2">
+    <div class="carousel-item" href="#one!" style="background-image: url(https://i0.wp.com/guild1.co/wp-content/uploads/2018/11/r3-aws-g1-darkdrapes.png?resize=1080%2C675&ssl=1)">
+      <ul class="collection with-header">
+        <li class="collection-header"><h6>GuildOne Partners with R3 and AWS to transform the oil and gas industry</h6></li>
+      </ul>
+    </div>
+    <div class="carousel-item" href="#two!" style="background-image: url(https://i1.wp.com/guild1.co/wp-content/uploads/2018/11/img_0067.jpg?resize=1080%2C675&ssl=1)">
+      <ul class="collection with-header">
+        <li class="collection-header"><h6>GuildOne selected as the 2018 winner of the ASTech award for Outstanding Achievement in Information and Communications Technology</h6></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="row center">
+  <a href="https://guild1.co/news/" target="_blank" class="btn-large waves-effect waves-light black">See All News</a>
+</div>
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/init.js"></script>
+
+  </body>
+</html>
