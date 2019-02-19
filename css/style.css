@@ -55,3 +55,7 @@ p {
 footer.page-footer {
   margin: 0;
 }
+
+.st-bg { border-left:none; }
+
+.st-dtitle { border:none; background:white; }
