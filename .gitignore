@@ -1,2 +1,5 @@
 .idea
-.idea/*
+codeDeployScripts
+appspec.yml
+bitbucket-pipelines.yml
+static
