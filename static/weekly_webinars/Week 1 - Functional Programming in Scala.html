@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Scala: Functional Programming</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2019-02-06T15:24:37-0700"/>
+        <meta name="modified" content="2019-02-06T17:23:28-0700"/>
+        <meta name="tags" content="guildone"/>
+        <meta name="last device" content="Jared’s MacBook Pro (2)"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>Scala: Functional Programming</h1>
+<p>Authored by: Curtis Stanford</p>
+<br>
+<h3>Topics</h3>
+<br>
+<ul><li>Typeclasses
+</li><li>Functional Programming
+</li><li>Expressions
+</li><li>Composability
+</li><li>Effects
+</li><li>IO
+</li><li>Functional Libraries
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Typeclasses</h3>
+<br>
+<ul><li>Many way to extend functionality of classes
+</li></ul>
+<br>
+<ul><li>OO likes to use inheritance
+</li></ul>
+<br>
+<ul><li>JVM languages only let you inherit from one super class
+</li></ul>
+<br>
+<ul><li>Inheritance is useful sometimes for an <b>is-as</b> relationship
+</li></ul>
+<br>
+<ul><li>What if you just want to give a class a skill it doesn't have?
+</li></ul>
+<br>
+<ul><li>What if you don't have access to the class's source code?
+</li></ul>
+<br>
+<ul><li>Typeclasses FTW!
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>The ‘Show’ Typeclass</h3>
+<br>
+<ul><li>In Scala, type-classes are created with a trait and a type parameter
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">trait</span> Show<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> show<span class="sf_code_punctuation">(</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<ul><li>The methods in the trait are the "skills" that the implementing
+</li></ul>
+<p>  class must provide</p>
+<br>
+<ul><li>Every class that has a string representation can implement this Show
+</li></ul>
+<p>  typeclass</p>
+<br>
+<ul><li>Yes, every class in Java (and Scala) has a toString method
+</li></ul>
+<br>
+<ul><li>However, it is <i>too</i>s pervasive
+</li></ul>
+<br>
+<ul><li>Not every class has a String representation
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Implementing a Typeclass</h3>
+<br>
+<ul><li>The typeclass trait is useless by itself
+</li></ul>
+<br>
+<ul><li>Every class that wants to have the typeclass's "skill" must implement the trait <b>implicitly</b>
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">implicit</span> <span class="sf_code_keyword">val</span> intShow<span class="sf_code_operator">:</span> Show<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> <span class="sf_code_keyword">new</span> Show<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> show<span class="sf_code_punctuation">(</span>a<span class="sf_code_operator">:</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> a<span class="sf_code_punctuation">.</span>toString
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<ul><li>This val in your implicit search path makes the Int class Show'able
+</li></ul>
+<hr>
+<br>
+<br>
+<br>
+<br>
+<h3>Using Typeclasses</h3>
+<br>
+<ul><li>Now, I can make a generic class that prints the string representation
+</li></ul>
+<p>  of any class</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">def</span> show<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)(</span><span class="sf_code_keyword">implicit</span> ev<span class="sf_code_operator">:</span> Show<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])</span> <span class="sf_code_operator">=</span> ev<span class="sf_code_punctuation">.</span>show<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">)</span></code></pre>
+<br>
+<ul><li>There is alternate syntax that may be more pleasing
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">def</span> show2<span class="sf_code_punctuation">[</span>A <span class="sf_code_operator">:</span> Show<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> implicitly<span class="sf_code_punctuation">[</span>Show<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]].</span>show<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">)</span></code></pre>
+<br>
+<ul><li>The A : Show is called a context bound and basically 
+</li></ul>
+<p>  says this function will accept any A value where an</p>
+<p>  implicit Show[A] instance is in scope for that type A</p>
+<br>
+<ul><li>There is a library called <b>simulacrum</b> which gets rid
+</li></ul>
+<p>  of all this implicitly boilerplate</p>
+<br>
+<br>
+<br>
+<br>
+<h3>Another example 'Json' Typeclass</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">trait</span> Json<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> toJson<span class="sf_code_punctuation">(</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span>
+  <span class="sf_code_keyword">def</span> parse<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> A
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<ul><li>Many json libraries use this approach
+</li></ul>
+<br>
+<ul><li>Here is an simple implementation
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> Person<span class="sf_code_punctuation">(</span>name<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">,</span> age<span class="sf_code_operator">:</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_keyword">implicit</span> <span class="sf_code_keyword">val</span> personJson<span class="sf_code_operator">:</span> Json<span class="sf_code_punctuation">[</span>Person<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> <span class="sf_code_keyword">new</span> Json<span class="sf_code_punctuation">[</span>Person<span class="sf_code_punctuation">]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> toJson<span class="sf_code_punctuation">(</span>a<span class="sf_code_operator">:</span> Person<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span> <span class="sf_code_operator">=</span> s<span class="sf_code_string">"""{
+      | "name": "${a.name}",
+      | "age": ${a.age}
+      |}"""</span><span class="sf_code_punctuation">.</span>stripMargin
+  <span class="sf_code_keyword">def</span> parse<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> Person <span class="sf_code_operator">=</span> <span class="sf_code_operator">???</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Functional Programming</h3>
+<br>
+<ul><li>What is it?
+</li></ul>
+<br>
+<ul><li>Why do it?
+</li></ul>
+<br>
+<ul><li>How do I do it?
+</li></ul>
+<br>
+<p>Programming with functions </p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">def</span> f<span class="sf_code_punctuation">(</span>a<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> <span class="sf_code_builtin">Int</span></code></pre>
+<br>
+<ul><li>This is a function that <b>maps</b> values from
+</li></ul>
+<p>the set of  Strings to values in the set of <b>Ints</b></p>
+<br>
+<ul><li>Programming with <i>pure</i>s functions 
+</li></ul>
+<br>
+<ul><li>Output of function is entirely determined by its input
+</li></ul>
+<br>
+<ul><li>Same input values <b>always</b> results in the same output
+</li></ul>
+<br>
+<ul><li>Evaluating an expression always results in the same answer
+</li></ul>
+<br>
+<ul><li>We can do things like <b>inline</b> function calls or factor one out
+</li></ul>
+<br>
+<ul><li>We can always substitute calling a function with its contents
+</li></ul>
+<br>
+<ul><li>This is called referential transparency
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Referential Transparency</h3>
+<br>
+<p>Are these programs the same?</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Program 1</span>
+<span class="sf_code_keyword">val</span> a <span class="sf_code_operator">=</span> <span class="sf_code_punctuation">&lt;</span><span class="sf_code_generics">expr</span><span class="sf_code_punctuation">&gt;</span>
+<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">,</span> a<span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_comment">// Program 2</span>
+<span class="sf_code_punctuation">(&lt;</span><span class="sf_code_generics">expr</span><span class="sf_code_punctuation">&gt;,</span> <span class="sf_code_punctuation">&lt;</span><span class="sf_code_generics">expr</span><span class="sf_code_punctuation">&gt;)</span></code></pre>
+<p><br></p>
+<p>Are these programs the same?</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Program 1</span>
+<span class="sf_code_keyword">val</span> a <span class="sf_code_operator">=</span> <span class="sf_code_number">42</span>
+<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">,</span> a<span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_comment">// Program 2</span>
+<span class="sf_code_punctuation">(</span><span class="sf_code_number">42</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">42</span><span class="sf_code_punctuation">)</span></code></pre>
+<p><br></p>
+<br>
+<p>Yes, 42 is a pure 'function'</p>
+<br>
+<p>Are these programs the same?</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Program 1</span>
+<span class="sf_code_keyword">val</span> a <span class="sf_code_operator">=</span> println<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Howdy"</span><span class="sf_code_punctuation">)</span>
+<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">,</span> a<span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_comment">// Program 2</span>
+<span class="sf_code_punctuation">(</span>println<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Howdy"</span><span class="sf_code_punctuation">),</span> println<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Howdy"</span><span class="sf_code_punctuation">))</span></code></pre>
+<p><br></p>
+<br>
+<p>No, println is not pure</p>
+<br>
+<br>
+<p>In fact, any type of I/O is not pure</p>
+<br>
+<p>Are these programs the same?</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Program 1</span>
+<span class="sf_code_keyword">val</span> a <span class="sf_code_operator">=</span> iter<span class="sf_code_punctuation">.</span>next<span class="sf_code_punctuation">()</span>   <span class="sf_code_comment">// iter is an iterator</span>
+<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">,</span> a<span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_comment">// Program 2</span>
+<span class="sf_code_punctuation">(</span>iter<span class="sf_code_punctuation">.</span>next<span class="sf_code_punctuation">(),</span> iter<span class="sf_code_punctuation">.</span>next<span class="sf_code_punctuation">())</span>
+</code></pre>
+<br>
+<p>Nope...</p>
+<br>
+<p>Are these programs the same?</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Program 1</span>
+<span class="sf_code_keyword">val</span> a <span class="sf_code_operator">=</span> Array<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">2</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">3</span><span class="sf_code_punctuation">)</span>
+<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">,</span> a<span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_comment">// Program 2</span>
+<span class="sf_code_punctuation">(</span>Array<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">2</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">3</span><span class="sf_code_punctuation">),</span> Array<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">2</span><span class="sf_code_punctuation">,</span> <span class="sf_code_number">3</span><span class="sf_code_punctuation">))</span>
+</code></pre>
+<br>
+<p>Maybe...</p>
+<br>
+<p>Array is mutable</p>
+<br>
+<p>One can modify elements in the array, making it not referentially transparent</p>
+<br>
+<p>That's why functional programmers usually prefer immutable data structures</p>
+<br>
+<p>Also, multi-threading is <b>much</b> easier with immutable data</p>
+<br>
+<ul><li>A function is either referentially transparent or it's not
+</li></ul>
+<br>
+<ul><li>A function that is not referentially transparent is a <i>side effect</i>
+</li></ul>
+<br>
+<ul><li>Goal of functional programming is to avoid <i>side effects</i>
+</li></ul>
+<br>
+<ul><li>Function purity also involves totality
+</li></ul>
+<br>
+<ul><li>A pure function maps <i>all</i> of its input values to an output
+</li></ul>
+<br>
+<ul><li>If it doesn't, it's called a partial function
+</li></ul>
+<br>
+<ul><li>Partial functions are not pure
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Not Pure</h3>
+<br>
+<ul><li>Exceptions (not much more than a glorified go-to)
+</li></ul>
+<br>
+<ul><li>Futures (not referentially transparent)
+</li></ul>
+<br>
+<ul><li>Database access
+</li></ul>
+<br>
+<ul><li>Reading/writing files
+</li></ul>
+<br>
+<ul><li>GUIs
+</li></ul>
+<br>
+<ul><li>Any function that returns <i>Unit is a side effect</i>
+</li></ul>
+<p>  It doesn't have any output</p>
+<br>
+<br>
+<br>
+<br>
+<h3>Other Code Smells</h3>
+<br>
+<ul><li>throwing Exceptions (deserves a second mention)
+</li></ul>
+<br>
+<ul><li>using for loops for iterating collections
+</li></ul>
+<br>
+<ul><li>vars or mutable collections
+</li></ul>
+<br>
+<ul><li>Global mutable data
+</li></ul>
+<br>
+<ul><li>Looong functions (composing smaller functions is better)
+</li></ul>
+<br>
+<ul><li>Calling foreach on a collection (foreach returns Unit)
+</li></ul>
+<br>
+<ul><li>Using while or do/while
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Exception!!</h3>
+<br>
+<ul><li>If, for performance reasons, you need to use mutable data
+</li></ul>
+<p>  or collections inside a function, that's OK.</p>
+<br>
+<ul><li>As long as the function takes immutable data as input
+</li></ul>
+<p>  and outputs immutable data, using mutability internally</p>
+<p>  is acceptable</p>
+<br>
+<ul><li>Bad example:
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> scala<span class="sf_code_punctuation">.</span>collection<span class="sf_code_punctuation">.</span>mutable<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">def</span> f<span class="sf_code_punctuation">(</span>n<span class="sf_code_operator">:</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> List<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">val</span> l <span class="sf_code_operator">=</span> <span class="sf_code_keyword">new</span> ArrayBuffer<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span>
+  <span class="sf_code_punctuation">(</span><span class="sf_code_number">0</span> to n<span class="sf_code_punctuation">).</span>foreach<span class="sf_code_punctuation">(</span>l <span class="sf_code_operator">+=</span> _<span class="sf_code_punctuation">)</span>
+  l<span class="sf_code_punctuation">.</span>toList
+<span class="sf_code_punctuation">}</span>
+
+f<span class="sf_code_punctuation">(</span><span class="sf_code_number">20</span><span class="sf_code_punctuation">)</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>How do I do anything useful?</h3>
+<br>
+<ul><li>Totally pure programs can do nothing but heat up your CPU
+</li></ul>
+<br>
+<ul><li>The idea is to defer non-pure activity to the edges of your program
+</li></ul>
+<br>
+<ul><li>The core of the program is pure
+</li></ul>
+<br>
+<ul><li>How to defer side effects coming up later...
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Why Bother?</h3>
+<br>
+<ul><li>Pure functions are easy to reason about (local reasoning)
+</li></ul>
+<br>
+<ul><li>Everything you need to know is in the function
+</li></ul>
+<br>
+<ul><li>There is nothing external to the function that can affect it
+</li></ul>
+<br>
+<ul><li>For example, global state, I/O, etc.
+</li></ul>
+<br>
+<ul><li>Programs are more predictable
+</li></ul>
+<br>
+<ul><li>Less bugs!
+</li></ul>
+<br>
+<ul><li>Concurrency or parallelism becomes much easier
+</li></ul>
+<br>
+<ul><li>Composability FTW
+</li></ul>
+<br>
+<ul><li>Testing easier
+</li></ul>
+<br>
+<ul><li>Pure functions can be memoized
+</li></ul>
+<br>
+<ul><li>Programs become smaller and easier to write
+</li></ul>
+<p>  (Once you wrap your head around the whole thing)</p>
+<br>
+<ul><li>Lazy evaluation becomes an option
+</li></ul>
+<br>
+<ul><li>Modularity (gluing solutions together and decomposing)
+</li></ul>
+<br>
+<ul><li>Higher-order functions also allow gluing programs together
+</li></ul>
+<p>  (a function that takes another function as input or </p>
+<p>   outputs a function)</p>
+<br>
+<br>
+<br>
+<br>
+<h3>Expressions</h3>
+<br>
+<ul><li>Functional programs are expressions
+</li></ul>
+<br>
+<ul><li>Expressions always return values
+</li></ul>
+<br>
+<ul><li>Scala structures always return values
+</li></ul>
+<p>  (if, match, try/catch, while, etc.)</p>
+<br>
+<ul><li>Can reason about our programs through <i>substitution</i>
+</li></ul>
+<br>
+<ul><li>We build bigger programs from smaller ones with <i>composition</i>
+</li></ul>
+<br>
+<ul><li>Composition is one of the main tools of functional programmers
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Composition</h3>
+<br>
+<p>Given a function</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> B</code></pre>
+<br>
+and another function
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> C</code></pre>
+<br>
+we can <b>compose</b> them because their types line up
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> h<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> C <span class="sf_code_operator">=</span> g<span class="sf_code_punctuation">(</span>f<span class="sf_code_punctuation">(...))</span>
+<span class="sf_code_keyword">val</span> h<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> C <span class="sf_code_operator">=</span> f andThen g 
+<span class="sf_code_keyword">val</span> h<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> C <span class="sf_code_operator">=</span> g compose f</code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Composition</h3>
+<br>
+<ul><li>Pure composed functions are associative
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_punctuation">(</span>f compose g<span class="sf_code_punctuation">)</span> compose h <span class="sf_code_operator">===</span> f compose <span class="sf_code_punctuation">(</span>g compose h<span class="sf_code_punctuation">)</span></code></pre>
+<br>
+<ul><li>Can always specify an identity function
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">def</span> id<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> A <span class="sf_code_operator">=</span> a</code></pre>
+<br>
+<ul><li>Now, any f compose id == f and id compose f == f
+</li></ul>
+<br>
+<ul><li>This property of functions is called right identity and left identity
+</li></ul>
+<br>
+<ul><li>These properties of associativity and identity are important for composability
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>So What About</h3>
+<br>
+<ul><li>Partiality
+</li></ul>
+<br>
+<ul><li>Exceptions
+</li></ul>
+<br>
+<ul><li>Non-determinism
+</li></ul>
+<br>
+<ul><li>Dependency injection
+</li></ul>
+<br>
+<ul><li>Logging
+</li></ul>
+<br>
+<ul><li>Mutable state
+</li></ul>
+<br>
+<ul><li>and all of those other imperative programming goodies...
+</li></ul>
+<br>
+<br>
+<ul><li>These are called <i>effects</i> (NOT side effects)
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h2>Let’s Talk About 6 Effect</h2>
+<br>
+<h3>Effect #1 - Partiality</h3>
+<br>
+<ul><li>Some functions don't return a value for all input (totality)
+</li></ul>
+<br>
+<ul><li>One way we handle this is with <b>Option</b>
+</li></ul>
+<br>
+<ul><li>Turns partial function back to a total function
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Functions may not return a value</span>
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_comment">// WTF, we can't compose them</span>
+f andThen g   <span class="sf_code_comment">// compiler type error</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Effect #2 - Exceptions</h3>
+<ul><li>Some functions may fail with a reason
+</li></ul>
+<br>
+<ul><li>One way to handle this is with <b>Either</b>
+</li></ul>
+<br>
+<ul><li>No exceptions required
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Functions that may fail with a String reason</span>
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> Either<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">String</span><span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> Either<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">String</span><span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_comment">// Can't compose these either :(</span>
+f andThen g  <span class="sf_code_comment">// compiler type error</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Effect #3 - Returning Many Values</h3>
+<br>
+<ul><li>Some functions return many values
+</li></ul>
+<br>
+<ul><li>One way to handle this is with <b>List</b>
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Functions that return many values</span>
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> List<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> List<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_comment">// You guessed it, no composition again</span>
+f andThen g   <span class="sf_code_comment">// compiler type error</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Effect #4 - Computation with Dependencies</h3>
+<br>
+<ul><li>Some programs need a dependency injected
+</li></ul>
+<br>
+<ul><li>For this we can use <b>Reader</b>
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> Reader<span class="sf_code_punctuation">[</span>E<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">](</span>run<span class="sf_code_operator">:</span> E <span class="sf_code_keyword">=&gt;</span> A<span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// simplified</span>
+
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> Reader<span class="sf_code_punctuation">[</span>Config<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// equivalent to A =&gt; (Config =&gt; B)</span>
+<span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> Reader<span class="sf_code_punctuation">[</span>Config<span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_comment">// No joy here either</span>
+f andThen g   <span class="sf_code_comment">// error</span></code></pre>
+<p><br></p>
+<h4>Reader Example</h4>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> Reader<span class="sf_code_punctuation">[</span>E<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">](</span>run<span class="sf_code_operator">:</span> E <span class="sf_code_keyword">=&gt;</span> A<span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// abbreviated definition</span>
+
+<span class="sf_code_comment">// Example</span>
+<span class="sf_code_keyword">type</span> Host <span class="sf_code_operator">=</span> <span class="sf_code_builtin">String</span>
+
+<span class="sf_code_keyword">def</span> path<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> Reader<span class="sf_code_punctuation">[</span>Host<span class="sf_code_punctuation">,</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  Reader <span class="sf_code_punctuation">{</span> host <span class="sf_code_keyword">=&gt;</span> s<span class="sf_code_string">"http://$host/$s"</span> <span class="sf_code_punctuation">}</span>
+
+<span class="sf_code_keyword">val</span> pp <span class="sf_code_operator">=</span> path<span class="sf_code_punctuation">(</span><span class="sf_code_string">"foo/bar"</span><span class="sf_code_punctuation">)</span>
+
+pp<span class="sf_code_punctuation">.</span>run<span class="sf_code_punctuation">(</span><span class="sf_code_string">"google.com"</span><span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// http://google.com/foo/bar</span>
+pp<span class="sf_code_punctuation">.</span>run<span class="sf_code_punctuation">(</span><span class="sf_code_string">"guild1.com"</span><span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// http://guild1.com/foo/bar</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<br>
+<h3>Effect #5 - Computations that have accompanying info (logs)</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> Writer<span class="sf_code_punctuation">[</span>W<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">](</span>w<span class="sf_code_operator">:</span> W<span class="sf_code_punctuation">,</span> a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// abbreviated definition</span>
+
+<span class="sf_code_comment">// Functions annotate values they compute</span>
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> Writer<span class="sf_code_punctuation">[</span>Info<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// equivalent to A =&gt; (Info, B)</span>
+<span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> Writer<span class="sf_code_punctuation">[</span>Info<span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_comment">// No composition</span>
+f andThen g  <span class="sf_code_comment">// error!</span></code></pre>
+<p><br></p>
+<h4>Writer Example</h4>
+<br>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> Writer<span class="sf_code_punctuation">[</span>W<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">](</span>w<span class="sf_code_operator">:</span> W<span class="sf_code_punctuation">,</span> a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// abbreviated definition</span>
+
+<span class="sf_code_comment">// Example</span>
+<span class="sf_code_keyword">type</span> Log <span class="sf_code_operator">=</span> List<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">String</span><span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_keyword">def</span> toDouble<span class="sf_code_punctuation">(</span>n<span class="sf_code_operator">:</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> Writer<span class="sf_code_punctuation">[</span>Log<span class="sf_code_punctuation">,</span> <span class="sf_code_builtin">Double</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  Writer<span class="sf_code_punctuation">(</span>List<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Converted $n to Double!"</span><span class="sf_code_punctuation">),</span> n<span class="sf_code_punctuation">.</span>toDouble<span class="sf_code_punctuation">)</span>
+
+toDouble<span class="sf_code_punctuation">(</span><span class="sf_code_number">10</span><span class="sf_code_punctuation">)</span>  <span class="sf_code_comment">// Writer(List(Converted 10 to Double!),10.0)</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Effect #6 - State</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> State<span class="sf_code_punctuation">[</span>S<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">](</span>run<span class="sf_code_operator">:</span> S <span class="sf_code_keyword">=&gt;</span> <span class="sf_code_punctuation">(</span>A<span class="sf_code_punctuation">,</span> S<span class="sf_code_punctuation">))</span> <span class="sf_code_comment">// abbreviated definition</span>
+
+<span class="sf_code_comment">// Computations with a state transition.</span>
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> State<span class="sf_code_punctuation">[</span>Info<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// equivalent to A =&gt; (B =&gt; (B, Info))</span>
+<span class="sf_code_keyword">val</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> State<span class="sf_code_punctuation">[</span>Info<span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">]</span>
+
+<span class="sf_code_comment">// No composition</span>
+f andThen g  <span class="sf_code_comment">// error!</span></code></pre>
+<p><br></p>
+<br>
+<h4>State Example</h4>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">case</span> <span class="sf_code_keyword">class</span> State<span class="sf_code_punctuation">[</span>S<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">](</span>run<span class="sf_code_operator">:</span> S <span class="sf_code_keyword">=&gt;</span> <span class="sf_code_punctuation">(</span>A<span class="sf_code_punctuation">,</span> S<span class="sf_code_punctuation">))</span> <span class="sf_code_comment">// abbreviated definition</span>
+
+<span class="sf_code_comment">// Example</span>
+<span class="sf_code_keyword">type</span> Counter <span class="sf_code_operator">=</span> <span class="sf_code_builtin">Int</span>
+
+<span class="sf_code_keyword">def</span> greet<span class="sf_code_punctuation">(</span>name<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> State<span class="sf_code_punctuation">[</span>Counter<span class="sf_code_punctuation">,</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  State <span class="sf_code_punctuation">{</span> count <span class="sf_code_keyword">=&gt;</span>
+    <span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hello $name, you are person number $count"</span><span class="sf_code_punctuation">,</span> count <span class="sf_code_operator">+</span> <span class="sf_code_number">1</span><span class="sf_code_punctuation">)</span>
+  <span class="sf_code_punctuation">}</span>
+
+<span class="sf_code_keyword">val</span> x <span class="sf_code_operator">=</span> greet<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Bob"</span><span class="sf_code_punctuation">)</span>
+x<span class="sf_code_punctuation">.</span>run<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">)</span>  <span class="sf_code_comment">// (Hello Bob, you are person number 1,2)</span>
+x<span class="sf_code_punctuation">.</span>run<span class="sf_code_punctuation">(</span><span class="sf_code_number">20</span><span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// (Hello Bob, you are person number 20,21)</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>What do these effects have in common?</h3>
+<br>
+<ul><li>They all compute an answer
+</li></ul>
+<br>
+<ul><li>Also encapsulate something extra about the computation
+</li></ul>
+<br>
+<ul><li>This "something extra" is called an <b>effect</b>
+</li></ul>
+<br>
+<ul><li>There are many more than 6
+</li></ul>
+<br>
+<h3>They all have the shape F[A]</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">type</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> Option<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+<span class="sf_code_keyword">type</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> Either<span class="sf_code_punctuation">[</span>E<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// for some type E</span>
+<span class="sf_code_keyword">type</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> List<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+<span class="sf_code_keyword">type</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> Reader<span class="sf_code_punctuation">[</span>E<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// for some type E</span>
+<span class="sf_code_keyword">type</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> Writer<span class="sf_code_punctuation">[</span>W<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// for some type W</span>
+<span class="sf_code_keyword">type</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> State<span class="sf_code_punctuation">[</span>S<span class="sf_code_punctuation">,</span> A<span class="sf_code_punctuation">]</span> <span class="sf_code_comment">// for some type S</span></code></pre>
+<p><br></p>
+<p>So, an <b>effect</b> is whatever distinguishes F[A] from A</p>
+<p>where <b>F</b> is called the effect</p>
+<br>
+<br>
+<p>F[A] is also called a <b>program in F that computes a value of type A</b></p>
+<hr>
+<br>
+<br>
+<br>
+<h3>But they don’t compose!</h3>
+<br>
+<p>Make a function that returns the 10th character of a string</p>
+<p>or None if there are less than 10 characters</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> char10<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span> <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Char</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> s <span class="sf_code_keyword">=&gt;</span> s<span class="sf_code_punctuation">.</span>lift<span class="sf_code_punctuation">(</span><span class="sf_code_number">10</span><span class="sf_code_punctuation">)</span></code></pre>
+<br>
+and another that returns the Int value of a Char
+only if it's a letter and None otherwise
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> letter<span class="sf_code_operator">:</span> <span class="sf_code_builtin">Char</span> <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  c <span class="sf_code_keyword">=&gt;</span> <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>c<span class="sf_code_punctuation">.</span>isLetter<span class="sf_code_punctuation">)</span> Some<span class="sf_code_punctuation">(</span>c<span class="sf_code_punctuation">.</span>toInt<span class="sf_code_punctuation">)</span> <span class="sf_code_keyword">else</span> None</code></pre>
+<p><br></p>
+<p>Let's try to compose them</p>
+<br>
+<pre><code class='code-multiline' lang='scala'>char10 andThen letter</code></pre>
+<br>
+
+
+
+<h3>We need a way to compose F[_] programs</h3>
+
+We need a typeclass that F can implement so that we can compose
+
+f: A => F[B] and g: B => F[C]
+
+such that
+
+f >=> g : A => F[C]
+
+Let's call >=> the <i>Rocket</i> operator
+
+
+
+
+<h3>Rocket Operations</h3>
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// A typeclass that describes type constructors that allow composition with &gt;=&gt;</span>
+
+<span class="sf_code_keyword">trait</span> Rocket<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+
+  <span class="sf_code_comment">// Our identity, A =&gt; F[A] for any type A</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+
+  <span class="sf_code_comment">// Composition - the "rocket" operator</span>
+  <span class="sf_code_keyword">def</span> <span class="sf_code_operator">&gt;</span><span class="sf_code_keyword">=&gt;</span><span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">](</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">],</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// A typeclass that describes type constructors that allow composition with &gt;=&gt;</span>
+
+<span class="sf_code_keyword">trait</span> Rocket<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+
+  <span class="sf_code_comment">// Our identity, A =&gt; F[A] for any type A</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+
+  <span class="sf_code_comment">// Composition - the "rocket" operator</span>
+  <span class="sf_code_keyword">def</span> <span class="sf_code_operator">&gt;</span><span class="sf_code_keyword">=&gt;</span><span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">](</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">],</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+    a <span class="sf_code_keyword">=&gt;</span> f<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">)</span>  <span class="sf_code_comment">// we have an F[B] and a B =&gt; F[C] and we want an F[C]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<h3>Diversion - Lists</h3>
+<br>
+<p>What if we have a <b>List[String] and a function</b> String => List[Int],</p>
+<p>how do we compose these to get a <b>List[Int]</b>?</p>
+<br>
+<br>
+<p>How about this:</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> ss<span class="sf_code_operator">:</span> List<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">String</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> List<span class="sf_code_punctuation">(</span><span class="sf_code_string">"a"</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">"bb"</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">"ccc"</span><span class="sf_code_punctuation">)</span>
+<span class="sf_code_keyword">val</span> f<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span> <span class="sf_code_keyword">=&gt;</span> List<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> s <span class="sf_code_keyword">=&gt;</span> List<span class="sf_code_punctuation">(</span>s<span class="sf_code_punctuation">.</span>length<span class="sf_code_punctuation">,</span> s<span class="sf_code_punctuation">.</span>length <span class="sf_code_operator">+</span> <span class="sf_code_number">1</span><span class="sf_code_punctuation">)</span>
+<span class="sf_code_keyword">val</span> ss2 <span class="sf_code_operator">=</span> ss<span class="sf_code_punctuation">.</span>flatMap<span class="sf_code_punctuation">(</span>f<span class="sf_code_punctuation">)</span></code></pre>
+<p><br></p>
+<p>That <b>rocket</b> operator >=> looks like flatMap !!</p>
+<br>
+<p>In the List[A] class:</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// def flatMap[B](f: A ⇒ List[B]): List[B] // simplified</span></code></pre>
+<br>
+
+
+
+<h3>Rocket Operations</h3>
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// A typeclass that describes type constructors that allow composition with &gt;=&gt;</span>
+
+<span class="sf_code_keyword">trait</span> Rocket<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+
+  <span class="sf_code_comment">// Our identity, A =&gt; F[A] for any type A</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+
+  <span class="sf_code_comment">// Composition - the "rocket" operator</span>
+  <span class="sf_code_keyword">def</span> <span class="sf_code_operator">&gt;</span><span class="sf_code_keyword">=&gt;</span><span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">,</span> C<span class="sf_code_punctuation">](</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">],</span> g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+    a <span class="sf_code_keyword">=&gt;</span> f<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">).</span>flatMap<span class="sf_code_punctuation">(</span>g<span class="sf_code_punctuation">)</span>  <span class="sf_code_comment">// it is a flatMap!</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// A typeclass that describes type constructors that allow composition with &gt;=&gt;</span>
+
+<span class="sf_code_keyword">trait</span> Rocket<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+
+  <span class="sf_code_comment">// Our identity, A =&gt; F[A] for any type A</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+
+  <span class="sf_code_comment">// What we need to define &gt;=&gt;</span>
+  <span class="sf_code_keyword">def</span> flatMap<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<h3>Rocket for Option</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Now we can define &gt;=&gt; as an infix operator using a syntax class</span>
+<span class="sf_code_keyword">implicit</span> <span class="sf_code_keyword">class</span> RocketFunctionOps<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">],</span> A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> <span class="sf_code_operator">&gt;</span><span class="sf_code_keyword">=&gt;</span><span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">](</span>g<span class="sf_code_operator">:</span> B <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">])(</span><span class="sf_code_keyword">implicit</span> ev<span class="sf_code_operator">:</span> Rocket<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>C<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+    a <span class="sf_code_keyword">=&gt;</span> ev<span class="sf_code_punctuation">.</span>flatMap<span class="sf_code_punctuation">(</span>f<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">))(</span>g<span class="sf_code_punctuation">)</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<p>Let's define a Rocket instance for Option</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">implicit</span> <span class="sf_code_keyword">val</span> RocketOption<span class="sf_code_operator">:</span> Rocket<span class="sf_code_punctuation">[</span>Option<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  <span class="sf_code_keyword">new</span> Rocket<span class="sf_code_punctuation">[</span>Option<span class="sf_code_punctuation">]</span> <span class="sf_code_punctuation">{</span>
+    <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> Some<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">)</span>
+
+    <span class="sf_code_keyword">def</span> flatMap<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> Option<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span> <span class="sf_code_operator">=</span> 
+      fa<span class="sf_code_punctuation">.</span>flatMap<span class="sf_code_punctuation">(</span>f<span class="sf_code_punctuation">)</span> <span class="sf_code_comment">// use standard library flatMap on Option</span>
+  <span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<h3>Let’s try our example again</h3>
+<br>
+<p>Make a function that returns the 10th character of a string</p>
+<p>or None if there are less than 10 characters</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> char10<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span> <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Char</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> s <span class="sf_code_keyword">=&gt;</span> s<span class="sf_code_punctuation">.</span>lift<span class="sf_code_punctuation">(</span><span class="sf_code_number">10</span><span class="sf_code_punctuation">)</span></code></pre>
+<br>
+and another that returns the Int value of a Char
+only if it's a letter and None otherwise
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">val</span> letter<span class="sf_code_operator">:</span> <span class="sf_code_builtin">Char</span> <span class="sf_code_keyword">=&gt;</span> Option<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  c <span class="sf_code_keyword">=&gt;</span> <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>c<span class="sf_code_punctuation">.</span>isLetter<span class="sf_code_punctuation">)</span> Some<span class="sf_code_punctuation">(</span>c<span class="sf_code_punctuation">.</span>toInt<span class="sf_code_punctuation">)</span> <span class="sf_code_keyword">else</span> None</code></pre>
+<p><br></p>
+<p>Let's try to compose them</p>
+<br>
+<pre><code class='code-multiline' lang='scala'>char10 <span class="sf_code_operator">&gt;</span><span class="sf_code_keyword">=&gt;</span> letter</code></pre>
+<br>
+
+
+<h3>Rules</h3>
+
+Note that this Rocket instance must obey the laws
+of associativity and identity to work correctly
+in all cases
+<hr>
+Rocket is usually known by another name...
+
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">trait</span> Rocket<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+  <span class="sf_code_keyword">def</span> flatMap<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<h3>Anyone heard of Monad?</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">trait</span> Monad<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+  <span class="sf_code_keyword">def</span> flatMap<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<p>We just derived the Monad typeclass from scratch!</p>
+<br>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Monad laws</span>
+
+pure<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">).</span>flatMap<span class="sf_code_punctuation">(</span>f<span class="sf_code_punctuation">)</span>      ≡ f<span class="sf_code_punctuation">(</span>a<span class="sf_code_punctuation">)</span>  <span class="sf_code_comment">// left identity</span>
+m<span class="sf_code_punctuation">.</span>flatMap<span class="sf_code_punctuation">(</span>pure<span class="sf_code_punctuation">)</span>         ≡ m     <span class="sf_code_comment">// right identity</span>
+m<span class="sf_code_punctuation">.</span>flatMap<span class="sf_code_punctuation">(</span>g<span class="sf_code_punctuation">).</span>flatMap<span class="sf_code_punctuation">(</span>h<span class="sf_code_punctuation">)</span> ≡ m<span class="sf_code_punctuation">.</span>flatMap<span class="sf_code_punctuation">(</span>b <span class="sf_code_keyword">=&gt;</span> g<span class="sf_code_punctuation">(</span>b<span class="sf_code_punctuation">).</span>flatMap<span class="sf_code_punctuation">(</span>h<span class="sf_code_punctuation">))</span> <span class="sf_code_comment">// associativity</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<h3>Monad</h3>
+<br>
+<ul><li>Monads come from category theory in mathematics
+</li></ul>
+<br>
+<ul><li>Name is scary, concept isn't
+</li></ul>
+<br>
+<ul><li>Don't need to know category theory to use Monads
+</li></ul>
+<br>
+<ul><li>You could call this a functional "pattern"
+</li></ul>
+<br>
+<ul><li>There are many more...
+</li></ul>
+<br>
+<ul><li>Many standard lib types are monads: Option, List, Set, Either, Try, etc.
+</li></ul>
+<br>
+<ul><li>These patterns are not in standard library, I like <b>cats</b> library
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Monad and Map</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">trait</span> Monad<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+  <span class="sf_code_keyword">def</span> flatMap<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+  <span class="sf_code_keyword">def</span> map<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> B<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<ul><li>However, <b>map</b> is not unique to monads
+</li></ul>
+<hr>
+<ul><li>Monad actually extends from another typeclass called <b>Functor</b>
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_comment">// Functor typeclass</span>
+<span class="sf_code_keyword">trait</span> Functor<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_punctuation">{</span>
+  <span class="sf_code_keyword">def</span> map<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> B<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span>
+
+<span class="sf_code_comment">// Monad typeclass</span>
+<span class="sf_code_keyword">trait</span> Monad<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">[</span>_<span class="sf_code_punctuation">]]</span> <span class="sf_code_keyword">extends</span> Functor<span class="sf_code_punctuation">[</span>F<span class="sf_code_punctuation">]</span> <span class="sf_code_punctuation">{</span> 
+  <span class="sf_code_keyword">def</span> pure<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">](</span>a<span class="sf_code_operator">:</span> A<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">]</span>
+  <span class="sf_code_keyword">def</span> flatMap<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">,</span> B<span class="sf_code_punctuation">](</span>fa<span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>A<span class="sf_code_punctuation">])(</span>f<span class="sf_code_operator">:</span> A <span class="sf_code_keyword">=&gt;</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">])</span><span class="sf_code_operator">:</span> F<span class="sf_code_punctuation">[</span>B<span class="sf_code_punctuation">]</span>
+<span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<ul><li>Effects can be functors and not monads but anything that is
+</li></ul>
+<p>  a monad is necessarily also a functor</p>
+<br>
+<br>
+<br>
+<br>
+<h3>Let’s simplify things</h3>
+<br>
+<ul><li>If you want a simpler way to think of this, any class with 
+</li></ul>
+<p>  one hole in it (i.e. List[<u>], Option[</u>]) that has a map </p>
+<p>  method with the right signature is a functor</p>
+<br>
+<ul><li>Any class with one hole in it that is a functor and also has
+</li></ul>
+<p>  pure and flatMap methods with the right signature is a monad</p>
+<br>
+<ul><li>Don't forget functors have to abide by the functor laws and
+</li></ul>
+<p>  monads have to follow the monad laws</p>
+<br>
+<ul><li>There are libraries like <b>cats</b> that can test these laws 
+</li></ul>
+<p>  for you automatically</p>
+<br>
+<br>
+<br>
+<br>
+<h3>Many Others</h3>
+<br>
+<ul><li>There are many other typeclasses (or functional patterns) like this
+</li></ul>
+<br>
+<ul><li>Checkout the cats documentation at <a href="https://typelevel.org/cats">https://typelevel.org/cats</a>
+</li></ul>
+<br>
+<ul><li>Cats also has typeclasses for Show, Eq (for equality testing) 
+</li></ul>
+<p>  and many others, including instances of the typeclasses for most</p>
+<p>  common Scala types</p>
+<br>
+<br>
+<br>
+<br>
+<h3>Let’s consider Option as a Monad</h3>
+<br>
+<ul><li>Given that Option is a monad, using the cats library we can
+</li></ul>
+<p>  do things like:</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>data<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">def</span> validate<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>s<span class="sf_code_punctuation">.</span>nonEmpty<span class="sf_code_punctuation">)</span> Some<span class="sf_code_punctuation">(</span>s<span class="sf_code_punctuation">)</span> <span class="sf_code_keyword">else</span> None
+validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Bob"</span><span class="sf_code_punctuation">)</span> product validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Dole"</span><span class="sf_code_punctuation">)</span>
+validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">""</span><span class="sf_code_punctuation">)</span> product validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Dole"</span><span class="sf_code_punctuation">)</span>
+validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Bob"</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">*&gt;</span> validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Dole"</span><span class="sf_code_punctuation">)</span>
+validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">""</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">*&gt;</span> validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Dole"</span><span class="sf_code_punctuation">)</span>
+validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Dole"</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">&lt;*</span> validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Bob"</span><span class="sf_code_punctuation">)</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Let’s consider Either again</h3>
+<br>
+<ul><li>Given that Either is a monad for a fixed E, we can do things 
+</li></ul>
+<p>  like:</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>data<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">def</span> validate<span class="sf_code_punctuation">(</span>tag<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">,</span> value<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span>
+  <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>value<span class="sf_code_punctuation">.</span>nonEmpty<span class="sf_code_punctuation">)</span> Right<span class="sf_code_punctuation">(</span>value<span class="sf_code_punctuation">)</span> <span class="sf_code_keyword">else</span> Left<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"$tag is empty"</span><span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_keyword">def</span> validateName<span class="sf_code_punctuation">(</span>first<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">,</span> last<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> <span class="sf_code_keyword">for</span> <span class="sf_code_punctuation">{</span>
+  first <span class="sf_code_keyword">&lt;-</span> validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"First name"</span><span class="sf_code_punctuation">,</span> first<span class="sf_code_punctuation">)</span>
+  last <span class="sf_code_keyword">&lt;-</span> validate<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Last name"</span><span class="sf_code_punctuation">,</span> last<span class="sf_code_punctuation">)</span>
+<span class="sf_code_punctuation">}</span> <span class="sf_code_keyword">yield</span> s<span class="sf_code_string">"$first $last"</span>
+
+validateName<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Bob"</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">"Dole"</span><span class="sf_code_punctuation">)</span>
+validateName<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Bob"</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">""</span><span class="sf_code_punctuation">)</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Let’s talk about List again</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>data<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+Monad<span class="sf_code_punctuation">[</span>List<span class="sf_code_punctuation">].</span>product<span class="sf_code_punctuation">(</span>List<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">,</span><span class="sf_code_number">2</span><span class="sf_code_punctuation">,</span><span class="sf_code_number">3</span><span class="sf_code_punctuation">),</span> List<span class="sf_code_punctuation">(</span><span class="sf_code_string">'x'</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">'y'</span><span class="sf_code_punctuation">))</span>
+List<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">,</span><span class="sf_code_number">2</span><span class="sf_code_punctuation">,</span><span class="sf_code_number">3</span><span class="sf_code_punctuation">)</span>  <span class="sf_code_operator">*&gt;</span> List<span class="sf_code_punctuation">(</span><span class="sf_code_string">'x'</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">'y'</span><span class="sf_code_punctuation">)</span>
+List<span class="sf_code_punctuation">(</span><span class="sf_code_string">'x'</span><span class="sf_code_punctuation">,</span> <span class="sf_code_string">'y'</span><span class="sf_code_punctuation">)</span>  <span class="sf_code_operator">&lt;*</span> List<span class="sf_code_punctuation">(</span><span class="sf_code_number">1</span><span class="sf_code_punctuation">,</span><span class="sf_code_number">2</span><span class="sf_code_punctuation">,</span><span class="sf_code_number">3</span><span class="sf_code_punctuation">)</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Let’s talk about Reader again</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>data<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">type</span> Host <span class="sf_code_operator">=</span> <span class="sf_code_builtin">String</span>
+
+<span class="sf_code_keyword">def</span> path<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span> Reader<span class="sf_code_punctuation">[</span>Host<span class="sf_code_punctuation">,</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  Reader<span class="sf_code_punctuation">(</span>host <span class="sf_code_keyword">=&gt;</span> s<span class="sf_code_string">"http: //$host/$s"</span><span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_keyword">val</span> hostLen<span class="sf_code_operator">:</span> Reader<span class="sf_code_punctuation">[</span>Host<span class="sf_code_punctuation">,</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  Reader<span class="sf_code_punctuation">(</span>host <span class="sf_code_keyword">=&gt;</span> host<span class="sf_code_punctuation">.</span>length<span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_keyword">val</span> prog <span class="sf_code_operator">=</span> <span class="sf_code_keyword">for</span> <span class="sf_code_punctuation">{</span>
+  a <span class="sf_code_keyword">&lt;-</span> path<span class="sf_code_punctuation">(</span><span class="sf_code_string">"foo/bar"</span><span class="sf_code_punctuation">)</span> 
+  b <span class="sf_code_keyword">&lt;-</span> hostLen
+<span class="sf_code_punctuation">}</span> <span class="sf_code_keyword">yield</span> s<span class="sf_code_string">"Path is $a and len is $b."</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>Let’s talk about State again</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>data<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">type</span> Seed <span class="sf_code_operator">=</span> <span class="sf_code_builtin">Int</span>
+
+<span class="sf_code_keyword">val</span> rnd<span class="sf_code_operator">:</span> State<span class="sf_code_punctuation">[</span>Seed<span class="sf_code_punctuation">,</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  State <span class="sf_code_punctuation">{</span> s <span class="sf_code_keyword">=&gt;</span>
+    <span class="sf_code_keyword">val</span> next <span class="sf_code_operator">=</span> <span class="sf_code_punctuation">((</span>s<span class="sf_code_punctuation">.</span>toLong <span class="sf_code_operator">*</span> <span class="sf_code_number">16807</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">%</span> <span class="sf_code_builtin">Int</span><span class="sf_code_punctuation">.</span>MaxValue<span class="sf_code_punctuation">).</span>toInt
+    <span class="sf_code_punctuation">(</span>next<span class="sf_code_punctuation">,</span> next<span class="sf_code_punctuation">)</span>
+  <span class="sf_code_punctuation">}</span>
+
+<span class="sf_code_keyword">val</span> d6 <span class="sf_code_operator">=</span> rnd<span class="sf_code_punctuation">.</span>map<span class="sf_code_punctuation">(</span>_ <span class="sf_code_operator">%</span> <span class="sf_code_number">6</span><span class="sf_code_punctuation">)</span>
+
+<span class="sf_code_keyword">val</span> damage <span class="sf_code_operator">=</span> <span class="sf_code_keyword">for</span> <span class="sf_code_punctuation">{</span>
+  a <span class="sf_code_keyword">&lt;-</span> d6
+  b <span class="sf_code_keyword">&lt;-</span> d6
+<span class="sf_code_punctuation">}</span> <span class="sf_code_keyword">yield</span> a <span class="sf_code_operator">+</span> b <span class="sf_code_operator">+</span> <span class="sf_code_number">2</span>
+
+<span class="sf_code_comment">// d6.run(...).value</span>
+<span class="sf_code_comment">// damage.run(...).value</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>OK, that’s all neat but how do I do I/O?</h3>
+<br>
+<ul><li>Now that we know what a monad is, another library called cats-effect
+</li></ul>
+<p>  supplies what's known as the IO monad</p>
+<br>
+<ul><li>This lets us encapsulate un-pure operations and compose them into 
+</li></ul>
+<p>  one "program" that we can run unsafely at the edge of our app</p>
+<br>
+<ul><li>Let's print hello world!
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">def</span> printHello<span class="sf_code_punctuation">()</span><span class="sf_code_operator">:</span> <span class="sf_code_builtin">Unit</span> <span class="sf_code_operator">=</span> println<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Hello world"</span><span class="sf_code_punctuation">)</span></code></pre>
+<br>
+<ul><li>Obviously this is not a pure function. Can we make it pure?
+</li></ul>
+<br>
+<ul><li>YES
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Printing in a pure function</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>effect<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">def</span> printHello<span class="sf_code_operator">:</span> IO<span class="sf_code_punctuation">[</span><span class="sf_code_builtin">Unit</span><span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span> IO<span class="sf_code_punctuation">(</span>println<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Hello world"</span><span class="sf_code_punctuation">))</span></code></pre>
+<p><br></p>
+<ul><li>printHello doesn't do anything but return an IO[Unit]
+</li></ul>
+<br>
+<ul><li>IO[Unit] means that it encapsulates some code that will
+</li></ul>
+<p>  return Unit</p>
+<br>
+<ul><li>You can call unsafeRunSync() on an IO to execute the 
+</li></ul>
+<p>  impure stuff inside of it.</p>
+<br>
+<ul><li>This is a PURE function
+</li></ul>
+<br>
+<ul><li>Every time I call it, I get the same output with no side effects
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Why?</h3>
+<br>
+<ul><li>Clearly separates pure code from impure code
+</li></ul>
+<br>
+<ul><li>IO computations are ordinary values that can be stored in lists,
+</li></ul>
+<p>  passed to other functions, created dynamically, etc.</p>
+<br>
+<ul><li>Instead of coupling side effects to evaluation of expressions,
+</li></ul>
+<p>  you make the side effect a first class type</p>
+<br>
+<ul><li>Just seeing that a function returns IO[...] lets you know that
+</li></ul>
+<p>  it's purpose is to create side effects</p>
+<br>
+<ul><li>You can compose many of these types of functions into complicated 
+</li></ul>
+<p>  "programs" that you can then run unsafely at the end of your application</p>
+<br>
+<br>
+<br>
+<br>
+<h3>More…</h3>
+<br>
+<ul><li>Ideally, your application would only call unsafeRun once
+</li></ul>
+<br>
+<ul><li>Some situations may require calling unsafeRun at major boundaries in
+</li></ul>
+<p>  your code.</p>
+<br>
+<ul><li>Cats effect also has concurrency primitives and guarantees that a 
+</li></ul>
+<p>  thread will never be blocked waiting for something to happen</p>
+<br>
+<ul><li>Also all IO actions are fully cancelable 
+</li></ul>
+<br>
+<ul><li>You can make Resource objects that are guaranteed to execute
+</li></ul>
+<p>  code to close resources, even in case of failure (actually</p>
+<p>  more reliable than a try/finally block)</p>
+<br>
+<br>
+<br>
+<br>
+<h3>File Example</h3>
+<br>
+<ul><li>Let's do an example of passing a file to a function that returns
+</li></ul>
+<p>  an InputStream (in an IO of course)</p>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> java<span class="sf_code_punctuation">.</span>io<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>effect<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">def</span> inputStream<span class="sf_code_punctuation">(</span>f<span class="sf_code_operator">:</span> File<span class="sf_code_punctuation">)</span><span class="sf_code_operator">:</span>  Resource<span class="sf_code_punctuation">[</span>IO<span class="sf_code_punctuation">,</span> FileInputStream<span class="sf_code_punctuation">]</span> <span class="sf_code_operator">=</span>
+  Resource<span class="sf_code_punctuation">.</span>make <span class="sf_code_punctuation">{</span>
+    IO<span class="sf_code_punctuation">(</span><span class="sf_code_keyword">new</span> FileInputStream<span class="sf_code_punctuation">(</span>f<span class="sf_code_punctuation">))</span>
+  <span class="sf_code_punctuation">}</span> <span class="sf_code_punctuation">{</span> inStream <span class="sf_code_keyword">=&gt;</span>
+    IO<span class="sf_code_punctuation">(</span>inStream<span class="sf_code_punctuation">.</span>close<span class="sf_code_punctuation">()).</span>handleErrorWith<span class="sf_code_punctuation">(</span>_ <span class="sf_code_keyword">=&gt;</span> IO<span class="sf_code_punctuation">.</span>unit<span class="sf_code_punctuation">)</span>
+  <span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<ul><li>This function will take any file and return me an input stream that is
+</li></ul>
+<p>  guaranteed to be closed when it's out of scope</p>
+<ul><li>Notice the handleErrorWith function that lets you handle errors in a pure way
+</li><li>The Resource class has two type parameters, one is the effect type (IO) and
+</li></ul>
+<p>  the other is what the resource contains (FileInputStream)</p>
+<ul><li>You'll see this pattern a lot
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>Again … why?</h3>
+<br>
+<ul><li>Every method I make in this way lets me locally reason about what
+</li></ul>
+<p>  each function does</p>
+<br>
+<ul><li>The inputStream function above doesn't reference anything outside
+</li></ul>
+<p>  of the function</p>
+<br>
+<ul><li>I know exactly what it does
+</li></ul>
+<br>
+<ul><li>These IO blobs can be composed in many ways to create arbitrarily
+</li></ul>
+<p>  complex operations</p>
+<br>
+<br>
+<br>
+<br>
+<h3>What kind of things can I do?</h3>
+<br>
+<ul><li>For example, I could (and have) make a method that take any IO operation
+</li></ul>
+<p>  and retries it when errors occur, maybe with an exponential backoff</p>
+<br>
+<ul><li>Create IO operations using many threads that are easy to reason about
+</li></ul>
+<p>  and not worry about locks or mutable state</p>
+<br>
+<ul><li>Cats effect uses a technique called <b>trampolining</b> so that IO
+</li></ul>
+<p>  methods can call themselves recursively as many times as they want</p>
+<p>  without blowing the stack</p>
+<br>
+<ul><li>Calling impure methods everywhere becomes very hard to reason about
+</li></ul>
+<p>  and eventually impossible to understand</p>
+<br>
+<ul><li>I think you'll find fewer bugs occur this way
+</li></ul>
+<br>
+<br>
+<br>
+<br>
+<h3>For Comprehensions</h3>
+<br>
+<ul><li>The IO monad, like other monads, uses flatMap and map to compose
+</li></ul>
+<p>  with other monads</p>
+<br>
+<ul><li>You can write the flatMaps and maps manually or use the Scala for
+</li></ul>
+<p>  statement as sugar</p>
+<br>
+<ul><li>Think writing the flatMaps and maps manually makes things easier
+</li></ul>
+<p>  to understand in the beginning</p>
+<br>
+<ul><li>At some point, you may want to use for comprehensions to make things 
+</li></ul>
+<p>  easier to read</p>
+<br>
+<br>
+<br>
+<br>
+<h3>For Example…</h3>
+<br>
+<ul><li>Here's an example of a for statement and what it de-sugars into
+</li></ul>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>effect<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">val</span> getLine <span class="sf_code_operator">=</span> IO<span class="sf_code_punctuation">(</span>scala<span class="sf_code_punctuation">.</span>Console<span class="sf_code_punctuation">.</span>readLine<span class="sf_code_punctuation">)</span>
+<span class="sf_code_keyword">def</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> IO<span class="sf_code_punctuation">(</span>println<span class="sf_code_punctuation">(</span>s<span class="sf_code_punctuation">))</span>
+
+<span class="sf_code_keyword">val</span> prog <span class="sf_code_operator">=</span> <span class="sf_code_keyword">for</span> <span class="sf_code_punctuation">{</span>
+  _ <span class="sf_code_keyword">&lt;-</span> printLine<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Please enter your name"</span><span class="sf_code_punctuation">)</span>
+  name <span class="sf_code_keyword">&lt;-</span> getLine
+  _ <span class="sf_code_keyword">&lt;-</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hello, $name, how old are you?"</span><span class="sf_code_punctuation">)</span>
+  age <span class="sf_code_keyword">&lt;-</span> getLine<span class="sf_code_punctuation">.</span>map<span class="sf_code_punctuation">(</span>_<span class="sf_code_punctuation">.</span>toInt<span class="sf_code_punctuation">)</span>
+  _ <span class="sf_code_keyword">&lt;-</span> <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>age <span class="sf_code_operator">&lt;</span> <span class="sf_code_number">30</span><span class="sf_code_punctuation">)</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Wow $name, $age isn't very old"</span><span class="sf_code_punctuation">)</span>
+       <span class="sf_code_keyword">else</span> <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>age <span class="sf_code_operator">&lt;</span> <span class="sf_code_number">60</span><span class="sf_code_punctuation">)</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hey $name, $age is an awesome age"</span><span class="sf_code_punctuation">)</span>
+       <span class="sf_code_keyword">else</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hey $name, get your $age year old ass out of my yard"</span><span class="sf_code_punctuation">)</span>
+<span class="sf_code_punctuation">}</span> <span class="sf_code_keyword">yield</span> <span class="sf_code_punctuation">()</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<br>
+<h3>De-sugared</h3>
+<br>
+<pre><code class='code-multiline' lang='scala'><span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>effect<span class="sf_code_punctuation">.</span>_
+<span class="sf_code_keyword">import</span> cats<span class="sf_code_punctuation">.</span>implicits<span class="sf_code_punctuation">.</span>_
+
+<span class="sf_code_keyword">val</span> getLine <span class="sf_code_operator">=</span> IO<span class="sf_code_punctuation">(</span>scala<span class="sf_code_punctuation">.</span>Console<span class="sf_code_punctuation">.</span>readLine<span class="sf_code_punctuation">)</span>
+<span class="sf_code_keyword">def</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_operator">:</span> <span class="sf_code_builtin">String</span><span class="sf_code_punctuation">)</span> <span class="sf_code_operator">=</span> IO<span class="sf_code_punctuation">(</span>println<span class="sf_code_punctuation">(</span>s<span class="sf_code_punctuation">))</span>
+
+<span class="sf_code_keyword">val</span> prog <span class="sf_code_operator">=</span>
+  printLine<span class="sf_code_punctuation">(</span><span class="sf_code_string">"Please enter your name"</span><span class="sf_code_punctuation">).</span>flatMap <span class="sf_code_punctuation">{</span> _ <span class="sf_code_keyword">=&gt;</span>
+    getLine<span class="sf_code_punctuation">.</span>flatMap <span class="sf_code_punctuation">{</span> name <span class="sf_code_keyword">=&gt;</span>
+      printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hello, $name, how old are you?"</span><span class="sf_code_punctuation">).</span>flatMap <span class="sf_code_punctuation">{</span> _ <span class="sf_code_keyword">=&gt;</span>
+        getLine<span class="sf_code_punctuation">.</span>map<span class="sf_code_punctuation">(</span>_<span class="sf_code_punctuation">.</span>toInt<span class="sf_code_punctuation">).</span>flatMap <span class="sf_code_punctuation">{</span> age <span class="sf_code_keyword">=&gt;</span>
+          <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>age <span class="sf_code_operator">&lt;</span> <span class="sf_code_number">30</span><span class="sf_code_punctuation">)</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Wow $name, $age isn't very old"</span><span class="sf_code_punctuation">)</span>
+          <span class="sf_code_keyword">else</span> <span class="sf_code_keyword">if</span> <span class="sf_code_punctuation">(</span>age <span class="sf_code_operator">&lt;</span> <span class="sf_code_number">60</span><span class="sf_code_punctuation">)</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hey $name, $age is an awesome age"</span><span class="sf_code_punctuation">)</span>
+          <span class="sf_code_keyword">else</span> printLine<span class="sf_code_punctuation">(</span>s<span class="sf_code_string">"Hey $name, get your $age year old ass out of my yard"</span><span class="sf_code_punctuation">)</span>
+        <span class="sf_code_punctuation">}</span>
+      <span class="sf_code_punctuation">}</span>
+    <span class="sf_code_punctuation">}</span>
+  <span class="sf_code_punctuation">}</span></code></pre>
+<p><br></p>
+<br>
+<br>
+<h3>Useful Functional Libraries</h3>
+<br>
+<ul><li><a href="https://github.com/mpilquist/simulacrum">Simulacrum</a> - makes typeclasses easy 
+</li><li><a href="https://github.com/typelevel/cats">Cats</a> - functional library for Scala 
+</li><li><a href="https://github.com/typelevel/cats-effect">Cats Effect</a> - IO Monad for Scala
+</li><li><a href="https://github.com/functional-streams-for-scala/fs2">fs2</a> - Great functional streaming library
+</li><li><a href="https://github.com/ovotech/fs2-kafka">fs2-kafka</a> - What we use to connect to Kafka
+</li></ul>
+<br>
+<br>
+<p><span class='hashtag'>#guildone</span></p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>
